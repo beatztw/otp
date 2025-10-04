@@ -1,7 +1,9 @@
 package ru.chugunov.otp.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.chugunov.otp.dto.common.CommonRequest;
@@ -16,9 +18,9 @@ public interface OtpControllerApi {
 
     @PostMapping("/generateAndSend")
     @ResponseStatus(HttpStatus.OK)
-    CommonResponse<GeneratedOtpResponse> generateAndSendOtp(CommonRequest<GeneratedOtpRequest> commonRequest);
+    CommonResponse<GeneratedOtpResponse> generateAndSendOtp(@RequestBody @Valid CommonRequest<GeneratedOtpRequest> commonRequest);
 
     @PostMapping("/check")
     @ResponseStatus(HttpStatus.OK)
-    CommonResponse<CheckOtpResponse> checkOtp(CommonRequest<CheckOtpRequest> commonRequest);
+    CommonResponse<CheckOtpResponse> checkOtp(@RequestBody @Valid CommonRequest<CheckOtpRequest> commonRequest);
 }
