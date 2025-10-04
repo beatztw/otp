@@ -1,6 +1,11 @@
 package ru.chugunov.otp.controllers.enums;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
 public enum SendingChannel {
-    telegram,
-    console
+    @JsonProperty("telegram")
+    TELEGRAM,
+    @JsonProperty("console")
+    CONSOLE
 }

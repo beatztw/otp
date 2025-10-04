@@ -1,5 +1,7 @@
 package ru.chugunov.otp.dto.requests;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CheckOtpRequest {
 
+    @NotEmpty(message = "Идентификатор процесса не может быть пустым")
     private UUID processID;
+
+    @NotBlank(message = "Одноразовый пароль не может быть пустым")
     private String otp;
 }

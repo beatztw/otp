@@ -8,18 +8,6 @@ group = 'ru.chugunov'
 version = '1.0.0-RC'
 description = 'otp'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
     mavenLocal()
