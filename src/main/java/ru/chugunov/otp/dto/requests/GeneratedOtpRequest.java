@@ -16,11 +16,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GeneratedOtpRequest {
 
-    @NotEmpty(message = "Идентификатор процесса не может быть пустым")
+    @NotNull(message = "Идентификатор процесса не может быть пустым")
     private UUID processID;
 
-    @NotBlank(message = "Канал отправки не может быть пустым")
-    @Pattern(regexp = "^telegram|console$", message = "Допустимые значения telegram или console")
+    @NotNull(message = "Канал отправки не может быть пустым")
     private SendingChannel sendingChannel;
 
     @NotBlank(message = "Адресс выполнения отправки не может быть пустым")
@@ -31,21 +30,21 @@ public class GeneratedOtpRequest {
 
     @NotNull(message = "Длина одноразового пароля не может null")
     @Range(min = 4L, max = 8L, message = "Длина одноразового пароля не может быть меньше 4 и больше 8")
-    private Long length;
+    private Integer length;
 
     @NotNull(message = "Время жизни одноразового пароля не может nNull")
     @Min(value = 30L, message = "Время жизни одноразового пароля не может быть меньше 30 секунд")
-    private Long ttl;
+    private Integer ttl;
 
     @NotNull(message = "Время жизни сессии одноразового пароля не может null")
     @Min(value = 60L, message = "Время жизни сессии одноразового пароля не может быть меньше 60")
-    private Long sessionTtl;
+    private Integer sessionTtl;
 
     @NotNull(message = "Количество повторных запросов на отправку не может null")
     @Range(min = 1L, max = 3L, message = "Количество повторных запросов на отправку не может быть меньше 1 и больше 3")
-    private Long resendAttempts;
+    private Integer resendAttempts;
 
     @NotNull(message = "Таймаут повторной отправки не может null")
     @Min(value = 30L, message = "Таймаут повторной отправки не может быть меньше 30 секунд")
-    private Long resendTimeout;
+    private Integer resendTimeout;
 }
