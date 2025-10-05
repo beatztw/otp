@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.chugunov.otp.dto.common.CommonResponse;
 import ru.chugunov.otp.dto.common.ValidationError;
+import ru.chugunov.otp.exception.OtpException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +79,7 @@ public class LinkShortenerExceptionHandler {
         return handleException(e);
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(Exception.class)
     public CommonResponse<?> handleException(Exception e){
         log.error("Непредвиденное исключение: {}", e.getMessage(), e);
@@ -85,6 +87,16 @@ public class LinkShortenerExceptionHandler {
         return CommonResponse.builder()
                 .id(UUID.randomUUID())
                 .errorMessage("Непредвиденное исключение: " + e.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(OtpException.class)
+    public CommonResponse<?> handleOtpException(OtpException e){
+        log.error("Перехвачено общее исключение OtpException: {}", e.getMessage(), e);
+
+        return CommonResponse.builder()
+                .id(UUID.randomUUID())
+                .errorMessage("Общее исключение OtpException: " + e.getMessage())
                 .build();
     }
 }
