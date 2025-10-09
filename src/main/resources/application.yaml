@@ -7,3 +7,15 @@ server:
 spring:
   application:
     name: otp
+  datasource:
+    url: jdbc:postgresql://localhost:5433/otp
+    username: postgres
+    password: postgres
+    hikari:
+      schema: otp
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS ${spring.datasource.hikari.schema}
+  liquibase:
+    change-log: db/changelog/changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: create

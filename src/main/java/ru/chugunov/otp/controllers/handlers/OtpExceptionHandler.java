@@ -90,13 +90,14 @@ public class OtpExceptionHandler {
                 .build();
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(OtpException.class)
     public CommonResponse<?> handleOtpException(OtpException e){
-        log.error("Перехвачено общее исключение OtpException: {}", e.getMessage(), e);
+        log.warn("Перехвачена ошибка выполнения бизнес-логики: {}", e.getMessage(), e);
 
         return CommonResponse.builder()
                 .id(UUID.randomUUID())
-                .errorMessage("Общее исключение OtpException: " + e.getMessage())
+                .errorMessage("Ошибка выполнения бизнес-логики: " + e.getMessage())
                 .build();
     }
 }
