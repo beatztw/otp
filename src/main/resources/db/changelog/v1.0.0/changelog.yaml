@@ -6,5 +6,5 @@ databaseChangeLog:
         - tagDatabase:
             tag: release/1.0.0
   - include:
-      file: 01.create_otp.yaml
+      file: 01.create_send_otp.yaml
       relativeToChangelogFile: true

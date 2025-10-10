@@ -15,10 +15,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(indexes = {
-        @Index(name = "idx_send_otp_process_id", columnList = "process_id"),
-        @Index(name = "idx_send_otp_target_status", columnList = "target, status")
-})
 public class SendOtp extends AuditableEntity {
 
     @Id
