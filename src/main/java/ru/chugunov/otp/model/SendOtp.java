@@ -5,17 +5,17 @@ import lombok.*;
 import ru.chugunov.otp.controllers.enums.SendOtpStatus;
 import ru.chugunov.otp.controllers.enums.SendingChannel;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
-@Table(name = "send_otp", indexes = {
+@Table(indexes = {
         @Index(name = "idx_send_otp_process_id", columnList = "process_id"),
         @Index(name = "idx_send_otp_target_status", columnList = "target, status")
 })
@@ -25,10 +25,10 @@ public class SendOtp extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String process_id;
+    private String processId;
 
     @Enumerated(EnumType.STRING)
-    private SendingChannel sending_channel;
+    private SendingChannel sendingChannel;
 
     private String target;
 
@@ -38,20 +38,20 @@ public class SendOtp extends AuditableEntity {
 
     private Integer ttl;
 
-    private Integer session_ttl;
+    private Integer sessionTtl;
 
-    private Integer resend_attempts;
+    private Integer resendAttempts;
 
-    private Integer resend_timeout;
+    private Integer resendTimeout;
 
-    private String encoded_otp;
+    private String encodedOtp;
 
-    private String send_message_key;
+    private String sendMessageKey;
 
     @Enumerated(EnumType.STRING)
     private SendOtpStatus status;
 
-    private Timestamp send_time;
+    private LocalDateTime sendTime;
 
 
     @Override

@@ -1,32 +1,34 @@
 package ru.chugunov.otp.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
-@Table(name = "check_otp")
 public class CheckOtp extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String process_id;
+    private String processId;
 
     private String otp;
 
-    private Timestamp check_time;
+    private LocalDateTime checkTime;
 
-    private boolean isCorrect;
+    private Boolean correct;
 
     @Override
     public boolean equals(Object o) {
