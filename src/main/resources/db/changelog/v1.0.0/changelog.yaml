@@ -8,3 +8,9 @@ databaseChangeLog:
   - include:
       file: 01.create_send_otp.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 02.create_check_otp.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 03.create_idx_otp.yaml
+      relativeToChangelogFile: true
