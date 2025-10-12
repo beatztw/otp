@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: release/1.0.0
+      author: "Chugunov AO"
+      changes:
+        - tagDatabase:
+            tag: release/1.0.0
+  - include:
+      file: 01.create_send_otp.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 02.create_check_otp.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 03.create_idx_otp.yaml
+      relativeToChangelogFile: true
