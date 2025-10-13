@@ -9,6 +9,7 @@ import ru.chugunov.otp.dto.common.CommonRequest;
 import ru.chugunov.otp.dto.common.CommonResponse;
 import ru.chugunov.otp.dto.requests.CheckOtpRequest;
 import ru.chugunov.otp.dto.requests.GeneratedOtpRequest;
+import ru.chugunov.otp.service.OtpService;
 
 import java.util.UUID;
 
@@ -18,8 +19,11 @@ import java.util.UUID;
 @RequestMapping("/api/v1/otp")
 public class OtpController implements OtpControllerApi {
 
+    private final OtpService otpService;
+
     @Override
     public CommonResponse<Void> generateAndSendOtp(CommonRequest<GeneratedOtpRequest> commonRequest) {
+        otpService.generateAndSendOtp(commonRequest.getBody());
 
         return CommonResponse.<Void>builder()
                 .id(UUID.randomUUID())
@@ -28,6 +32,7 @@ public class OtpController implements OtpControllerApi {
 
     @Override
     public CommonResponse<Void> checkOtp(CommonRequest<CheckOtpRequest> commonRequest) {
+        otpService.checkOtp(commonRequest.getBody());
 
         return CommonResponse.<Void>builder()
                 .id(UUID.randomUUID())
