@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.chugunov.otp.controllers.enums.SendOtpStatus;
 import ru.chugunov.otp.dto.requests.CheckOtpRequest;
 import ru.chugunov.otp.dto.requests.GeneratedOtpRequest;
@@ -19,7 +18,6 @@ import ru.chugunov.otp.service.OtpService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,45 +25,14 @@ import java.util.UUID;
 public class OtpServiceImpl implements OtpService {
 
     private final CheckOtpRepository checkOtpRepository;
-
     private final SendOtpRepository sendOtpRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final CheckOtpMapper checkOtpMapper;
-
     private final SendOtpMapper sendOtpMapper;
 
     @Override
-    @Transactional
     public void generateAndSendOtp(GeneratedOtpRequest request) {
-        Optional<SendOtp> latestSendOtp = sendOtpRepository.findFirstByProcessIdAndOrderByCreateTimeDesc(
-                String.valueOf(request.getProcessID())
-            );
-
-        if (latestSendOtp.isPresent()) {
-            LocalDateTime now = LocalDateTime.now();
-            SendOtp latestOtp = latestSendOtp.get();
-            LocalDateTime createTime = latestOtp.getCreateTime();
-
-            if (createTime.plusSeconds(request.getSessionTtl()).isBefore(now)) {
-                throw new SessionTtlOtpExceededException("Превышено время жизни сессии для отправки OTP");
-            }
-
-            if (createTime.plusSeconds(request.getResendTimeout()).isAfter(now)) {
-                throw new ResendOtpFrequencyExceededException("Превышена частота попыток отправки OTP");
-            }
-        }
-
-        List<SendOtp> sendOtpList = sendOtpRepository.findAllByProcessIdOrderByCreateTimeAsc(
-                String.valueOf(request.getProcessID())
-        );
-
-        if (!sendOtpList.isEmpty()) {
-            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
-                throw new SendAttemptsExceededException("Превышено количество отправок OTP");
-            }
-        }
+        validateSendOtpRequest(request);
 
         String generatedOtp = RandomStringUtils.randomNumeric(request.getLength());
         String encodedOtp = passwordEncoder.encode(request.getProcessID() + generatedOtp);
@@ -79,20 +46,14 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public void checkOtp(CheckOtpRequest request) {
-        SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdAndOrderByCreateTimeDesc(
+        SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdOrderByCreateTimeDesc(
                 String.valueOf(request.getProcessID())
-            ).orElseThrow(() -> new OtpNotFoundException("Не удалось найти информацию об отправленном OTP"));
+            ).orElseThrow(OtpNotFoundException::new);
 
-        LocalDateTime now = LocalDateTime.now();
-        if (latestOtp.getCreateTime().plusSeconds(latestOtp.getTtl()).isBefore(now)) {
-            throw new OtpExpiredException("Время жизни OTP истекло");
-        }
-
+        validateLatestOtp(latestOtp);
         checkIfAlreadyVerified(request);
-
         verifyOtp(request, latestOtp);
 
-//        CheckOtp correctOtp = buildCheckOtp(request, true);
         saveOtp(request, true);
     }
 
@@ -107,6 +68,30 @@ public class OtpServiceImpl implements OtpService {
         }
     }
 
+    private void validateSendOtpRequest(GeneratedOtpRequest request) {
+        List<SendOtp> sendOtpList = sendOtpRepository.findAllByProcessIdOrderByCreateTimeAsc(
+                String.valueOf(request.getProcessID())
+        );
+
+        if (!sendOtpList.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            SendOtp latestOtp = sendOtpList.get(sendOtpList.size() - 1);
+            LocalDateTime createTime = latestOtp.getCreateTime();
+
+            if (createTime.plusSeconds(request.getSessionTtl()).isBefore(now)) {
+                throw new SessionTtlOtpExceededException();
+            }
+
+            if (createTime.plusSeconds(request.getResendTimeout()).isBefore(now)) {
+                throw new ResendOtpFrequencyExceededException();
+            }
+
+            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
+                throw new SendAttemptsExceededException();
+            }
+        }
+    }
+
     private SendOtp buildSendOtp(GeneratedOtpRequest request, String encodedOtp) {
         SendOtp sendOtp = sendOtpMapper.fromGeneratedOtpRequestToEntity(request);
         sendOtp.setEncodedOtp(encodedOtp);
@@ -118,6 +103,11 @@ public class OtpServiceImpl implements OtpService {
         return sendOtp;
     }
 
+    private void validateLatestOtp(SendOtp latestOtp) {
+        if (latestOtp.getCreateTime().plusSeconds(latestOtp.getTtl()).isBefore(LocalDateTime.now())) {
+            throw new OtpExpiredException();
+        }
+    }
     private void checkIfAlreadyVerified(CheckOtpRequest request) {
         boolean alreadyVerified = checkOtpRepository.existsByProcessIdAndOtpAndCorrectTrue(
                 String.valueOf(request.getProcessID()),
@@ -125,10 +115,9 @@ public class OtpServiceImpl implements OtpService {
         );
 
         if (alreadyVerified) {
-//            CheckOtp notAlreadyVerifiedOtp = buildCheckOtp(request, false);
             saveOtp(request, false);
 
-            throw new OtpAlreadyVerifiedException("Попытка подтверждения ранее подтвержденного OTP");
+            throw new OtpAlreadyVerifiedException();
         }
     }
 
@@ -139,10 +128,9 @@ public class OtpServiceImpl implements OtpService {
         );
 
         if (!isCorrectOtp) {
-//            CheckOtp incorrectOtp = buildCheckOtp(request, false);
             saveOtp(request, false);
 
-            throw new InvalidOtpException("Введен неверный OTP");
+            throw new InvalidOtpException();
         }
     }
 

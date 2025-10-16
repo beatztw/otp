@@ -2,7 +2,7 @@ package ru.chugunov.otp.exception;
 
 public class OtpNotFoundException extends OtpException {
 
-    public OtpNotFoundException(String message) {
-        super(message);
+    public OtpNotFoundException() {
+        super("Не удалось найти информацию об отправленном OTP");
     }
 }
