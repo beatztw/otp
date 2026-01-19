@@ -19,4 +19,6 @@ public interface SendOtpRepository extends JpaRepository<SendOtp, UUID> {
     Optional<SendOtp> findFirstByProcessIdAndOrderByCreateTimeDesc(String processId);
 
     List<SendOtp> findAllByProcessIdOrderByCreateTimeAsc(String processId);
+
+    Optional<SendOtp> findBySendMessageKey(String sendMessageKey);
 }

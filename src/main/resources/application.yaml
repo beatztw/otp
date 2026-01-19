@@ -20,3 +20,18 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+  kafka:
+    bootstrap-servers: 81.30.105.54:29092
+    producer:
+      acks: all
+    consumer:
+      group-id: send-otp-group
+
+otp:
+  kafka:
+    send-otp:
+      enabled: true
+      in:
+        topic: Send.Otp.IN.V1
+      out:
+        topic: Send.Otp.OUT.V1

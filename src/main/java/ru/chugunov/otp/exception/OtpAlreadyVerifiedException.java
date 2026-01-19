@@ -1,6 +1,6 @@
 package ru.chugunov.otp.exception;
 
-public class OtpAlreadyVerifiedException extends OtpException {
+public class OtpAlreadyVerifiedException extends BusinessException {
 
     public OtpAlreadyVerifiedException(String message) {
         super(message);
