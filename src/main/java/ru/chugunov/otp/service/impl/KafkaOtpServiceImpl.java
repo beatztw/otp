@@ -39,7 +39,7 @@ public class KafkaOtpServiceImpl implements KafkaOtpService {
 
     private final JsonUtils jsonUtils;
 
-    @Value("${otp.kafka.send-otp.in.topic}")
+    @Value("${otp.kafka.send-otp.topic-in}")
     private String topicIn;
 
     @Override

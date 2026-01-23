@@ -22,7 +22,7 @@ public class KafkaSendOtpListener {
     private final JsonUtils jsonUtils;
     private final KafkaMessageContext kafkaMessageContext;
 
-    @KafkaListener(topics = "${otp.kafka.send-otp.out.topic}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${otp.kafka.send-otp.topic-out}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveResponse(ConsumerRecord<String, String> consumerRecord,
                                 @Payload(required = false) String payload) {
 

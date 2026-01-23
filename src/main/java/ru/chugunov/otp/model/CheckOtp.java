@@ -18,16 +18,27 @@ import java.util.UUID;
 @Entity
 public class CheckOtp extends AuditableEntity {
 
+    /**
+     * Уникальный идентификатор записи
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
+    /**
+     * Идентификатор процесса в рамках которого запрашивается одноразовый пароль
+     */
     private String processId;
-
+    /**
+     * Введенный одноразовый пароль
+     */
     private String otp;
-
+    /**
+     * Время проверки одноразового пароля
+     */
     private LocalDateTime checkTime;
-
+    /**
+     * Признак корректности одноразового пароля
+     */
     private Boolean correct;
 
     @Override

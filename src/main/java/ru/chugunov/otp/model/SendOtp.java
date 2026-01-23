@@ -17,38 +17,66 @@ import java.util.UUID;
 @Entity
 public class SendOtp extends AuditableEntity {
 
+    /**
+     * Уникальный идентификатор записи
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
+    /**
+     * Идентификатор процесса в рамках которого запрашивается одноразовый пароль
+     */
     private String processId;
-
+    /**
+     * Канал отправки одноразового пароля
+     */
     @Enumerated(EnumType.STRING)
     private SendingChannel sendingChannel;
-
+    /**
+     * Адрес, куда будет выполнена отправка в начале
+     */
     private String target;
-
+    /**
+     * Текст сообщения отправки
+     */
     private String message;
-
+    /**
+     * Длина одноразового пароля
+     */
     private Integer length;
-
+    /**
+     * Время жизни одноразового пароля (в сек.)
+     */
     private Integer ttl;
-
+    /**
+     * Время жизни сессии одноразового пароля (в сек.)
+     */
     private Integer sessionTtl;
-
+    /**
+     * Количество возможных повторных отправок кода
+     */
     private Integer resendAttempts;
-
+    /**
+     * Таймаут перед повторным запросом кода (в сек.)
+     */
     private Integer resendTimeout;
-
+    /**
+     * Зашифрованный одноразовый пароль
+     */
     private String encodedOtp;
-
+    /**
+     * Идентификатор сообщения, отправляемого во внешнюю систему
+     */
     private String sendMessageKey;
-
+    /**
+     * Статус отправки сообщения
+     */
     @Enumerated(EnumType.STRING)
     private SendOtpStatus status;
-
+    /**
+     * Время отправки одноразового пароля
+     */
     private LocalDateTime sendTime;
-
 
     @Override
     public boolean equals(Object o) {

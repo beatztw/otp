@@ -31,7 +31,5 @@ otp:
   kafka:
     send-otp:
       enabled: true
-      in:
-        topic: Send.Otp.IN.V1
-      out:
-        topic: Send.Otp.OUT.V1
+      topic-in: Send.Otp.IN.V1
+      topic-out: Send.Otp.OUT.V1
