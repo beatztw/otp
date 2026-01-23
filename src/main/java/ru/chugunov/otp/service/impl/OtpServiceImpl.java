@@ -31,17 +31,12 @@ public class OtpServiceImpl implements OtpService {
     private final KafkaOtpService kafkaOtpService;
 
     private final CheckOtpRepository checkOtpRepository;
-
     private final SendOtpRepository sendOtpRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final CheckOtpMapper checkOtpMapper;
-
     private final SendOtpMapper sendOtpMapper;
 
     @Override
-    @Transactional
     public void generateAndSendOtp(GeneratedOtpRequest request) {
         validateSendOtpRequest(request);
 
@@ -59,7 +54,7 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public void checkOtp(CheckOtpRequest request) {
-        SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdAndOrderByCreateTimeDesc(
+        SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdOrderByCreateTimeDesc(
                 String.valueOf(request.getProcessID())
         ).orElseThrow(() -> new OtpNotFoundException("Не удалось найти информацию об отправленном OTP"));
 
@@ -127,6 +122,30 @@ public class OtpServiceImpl implements OtpService {
         }
     }
 
+    private void validateSendOtpRequest(GeneratedOtpRequest request) {
+        List<SendOtp> sendOtpList = sendOtpRepository.findAllByProcessIdOrderByCreateTimeAsc(
+                String.valueOf(request.getProcessID())
+        );
+
+        if (!sendOtpList.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            SendOtp latestOtp = sendOtpList.get(sendOtpList.size() - 1);
+            LocalDateTime createTime = latestOtp.getCreateTime();
+
+            if (createTime.plusSeconds(request.getSessionTtl()).isBefore(now)) {
+                throw new SessionTtlOtpExceededException();
+            }
+
+            if (createTime.plusSeconds(request.getResendTimeout()).isBefore(now)) {
+                throw new ResendOtpFrequencyExceededException();
+            }
+
+            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
+                throw new SendAttemptsExceededException();
+            }
+        }
+    }
+
     private SendOtp buildSendOtp(GeneratedOtpRequest request, String encodedOtp) {
         SendOtp sendOtp = sendOtpMapper.fromGeneratedOtpRequestToEntity(request);
 
@@ -154,7 +173,7 @@ public class OtpServiceImpl implements OtpService {
         if (alreadyVerified) {
             saveOtp(request, false);
 
-            throw new OtpAlreadyVerifiedException("Попытка подтверждения ранее подтвержденного OTP");
+            throw new OtpAlreadyVerifiedException();
         }
     }
 
@@ -167,7 +186,7 @@ public class OtpServiceImpl implements OtpService {
         if (!isCorrectOtp) {
             saveOtp(request, false);
 
-            throw new InvalidOtpException("Введен неверный OTP");
+            throw new InvalidOtpException();
         }
     }
 
