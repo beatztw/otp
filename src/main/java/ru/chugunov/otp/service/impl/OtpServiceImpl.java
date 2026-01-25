@@ -37,6 +37,7 @@ public class OtpServiceImpl implements OtpService {
     private final SendOtpMapper sendOtpMapper;
 
     @Override
+    @Transactional
     public void generateAndSendOtp(GeneratedOtpRequest request) {
         validateSendOtpRequest(request);
 
@@ -56,7 +57,7 @@ public class OtpServiceImpl implements OtpService {
     public void checkOtp(CheckOtpRequest request) {
         SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdOrderByCreateTimeDesc(
                 String.valueOf(request.getProcessID())
-        ).orElseThrow(() -> new OtpNotFoundException("Не удалось найти информацию об отправленном OTP"));
+        ).orElseThrow(OtpNotFoundException::new);
 
         validateLatestOtp(latestOtp);
         checkIfAlreadyVerified(request);
@@ -82,10 +83,7 @@ public class OtpServiceImpl implements OtpService {
 
     private void checkKafkaResponse(String sendMessageKey, SendOtpKafkaResponse response) {
         SendOtp otpRecord = sendOtpRepository.findBySendMessageKey(sendMessageKey)
-                .orElseThrow(() -> new OtpNotFoundException(
-                        String.format("Не удалось найти информацию об отправленном OTP с message key %s",
-                                sendMessageKey))
-                );
+                .orElseThrow(OtpNotFoundException::new);
 
         if (SendOtpKafkaStatus.ERROR.equals(response.getStatus())) {
             otpRecord.setStatus(SendOtpStatus.ERROR);
@@ -95,30 +93,6 @@ public class OtpServiceImpl implements OtpService {
         } else if (SendOtpKafkaStatus.SUCCESS.equals(response.getStatus())) {
             otpRecord.setStatus(SendOtpStatus.DELIVERED);
             sendOtpRepository.save(otpRecord);
-        }
-    }
-
-    private void validateSendOtpRequest(GeneratedOtpRequest request) {
-        List<SendOtp> sendOtpList = sendOtpRepository.findAllByProcessIdOrderByCreateTimeAsc(
-                String.valueOf(request.getProcessID())
-        );
-
-        if (!sendOtpList.isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            SendOtp latestOtp = sendOtpList.get(sendOtpList.size() - 1);
-            LocalDateTime createTime = latestOtp.getCreateTime();
-
-            if (createTime.plusSeconds(request.getSessionTtl()).isBefore(now)) {
-                throw new SessionTtlOtpExceededException("Превышено время жизни сессии для отправки OTP");
-            }
-
-            if (createTime.plusSeconds(request.getResendTimeout()).isBefore(now)) {
-                throw new ResendOtpFrequencyExceededException("Превышена частота попыток отправки OTP");
-            }
-
-            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
-                throw new SendAttemptsExceededException("Превышено количество отправок OTP");
-            }
         }
     }
 
@@ -160,7 +134,7 @@ public class OtpServiceImpl implements OtpService {
 
     private void validateLatestOtp(SendOtp latestOtp) {
         if (latestOtp.getCreateTime().plusSeconds(latestOtp.getTtl()).isBefore(LocalDateTime.now())) {
-            throw new OtpExpiredException("Время жизни OTP истекло");
+            throw new OtpExpiredException();
         }
     }
 

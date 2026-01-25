@@ -67,10 +67,7 @@ public class TelegramSendOtpServiceImpl implements TelegramSendOtpService {
             return response;
         } catch (TimeoutException e) {
             SendOtp otpRecord = sendOtpRepository.findBySendMessageKey(sendMessageKey)
-                    .orElseThrow(() -> new OtpNotFoundException(
-                            String.format("Не удалось найти информацию об отправленном OTP с message key %s",
-                                    sendMessageKey))
-                    );
+                    .orElseThrow(OtpNotFoundException::new);
 
             otpRecord.setStatus(SendOtpStatus.ERROR);
             sendOtpRepository.save(otpRecord);
