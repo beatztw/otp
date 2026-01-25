@@ -2,6 +2,7 @@ package ru.chugunov.otp.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.chugunov.otp.dto.responses.SendOtpKafkaResponse;
@@ -9,15 +10,20 @@ import ru.chugunov.otp.dto.responses.SendOtpKafkaResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
-import static ru.chugunov.otp.utils.Constants.TTL_AFTER_WRITE_CACHE;
-
 @Configuration
 public class CaffeineCacheConfig {
+
+    @Value("${otp.caffeine.expire-after-write-minutes}")
+    private Long expireAfterWriteMinutes;
+
+    @Value("${otp.caffeine.maximum-size}")
+    private Long maximumCacheSize;
 
     @Bean
     public Cache<String, CompletableFuture<SendOtpKafkaResponse>> kafkaResponseCache() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofMinutes(TTL_AFTER_WRITE_CACHE))
+                .expireAfterWrite(Duration.ofMinutes(expireAfterWriteMinutes))
+                .maximumSize(maximumCacheSize)
                 .build();
     }
 }

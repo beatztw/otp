@@ -18,9 +18,6 @@ import java.util.UUID;
 @Entity
 public class CheckOtp extends AuditableEntity {
 
-    /**
-     * Уникальный идентификатор записи
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

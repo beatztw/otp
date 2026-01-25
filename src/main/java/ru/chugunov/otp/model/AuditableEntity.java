@@ -15,21 +15,12 @@ import static ru.chugunov.otp.utils.Constants.DEFAULT_DB_USER;
 @MappedSuperclass
 public class AuditableEntity {
 
-    /**
-     * Время создания записи
-     */
     private LocalDateTime createTime;
-    /**
-     * Пользователь, создавший запись
-     */
+
     private String createUser;
-    /**
-     * Время последнего обновлнеия записи
-     */
+
     private LocalDateTime lastUpdateTime;
-    /**
-     * Пользователь, изменивший запись
-     */
+
     private String lastUpdateUser;
 
     @PrePersist

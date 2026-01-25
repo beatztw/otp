@@ -17,9 +17,6 @@ import java.util.UUID;
 @Entity
 public class SendOtp extends AuditableEntity {
 
-    /**
-     * Уникальный идентификатор записи
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

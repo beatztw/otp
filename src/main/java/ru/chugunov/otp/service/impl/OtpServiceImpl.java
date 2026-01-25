@@ -17,7 +17,7 @@ import ru.chugunov.otp.model.CheckOtp;
 import ru.chugunov.otp.model.SendOtp;
 import ru.chugunov.otp.repository.CheckOtpRepository;
 import ru.chugunov.otp.repository.SendOtpRepository;
-import ru.chugunov.otp.service.KafkaOtpService;
+import ru.chugunov.otp.service.TelegramSendOtpService;
 import ru.chugunov.otp.service.OtpService;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
 
-    private final KafkaOtpService kafkaOtpService;
+    private final TelegramSendOtpService telegramSendOtpService;
 
     private final CheckOtpRepository checkOtpRepository;
 
@@ -74,7 +74,7 @@ public class OtpServiceImpl implements OtpService {
         switch (request.getSendingChannel()) {
             case TELEGRAM -> {
                 SendOtpKafkaResponse response =
-                        kafkaOtpService.sendOtpToTelegram(request.getTarget(), message, sendMessageKey);
+                        telegramSendOtpService.sendOtpToTelegram(request.getTarget(), message, sendMessageKey);
 
                 checkKafkaResponse(sendMessageKey, response);
             }

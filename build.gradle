@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'ru.chugunov'
-version = '1.0.0-RC'
+version = '1.0.0-RC1'
 description = 'otp'
 
 repositories {
@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-crypto'
     implementation 'org.springframework.kafka:spring-kafka'
 
-    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.postgresql:postgresql'
@@ -41,7 +41,6 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-//    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
 }
 
 tasks.named('test') {

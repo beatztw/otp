@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.chugunov.otp.dto.responses.SendOtpKafkaResponse;
 import ru.chugunov.otp.kafka.KafkaMessageContext;
 import ru.chugunov.otp.utils.JsonUtils;
@@ -23,10 +23,9 @@ public class KafkaSendOtpListener {
     private final KafkaMessageContext kafkaMessageContext;
 
     @KafkaListener(topics = "${otp.kafka.send-otp.topic-out}", groupId = "${spring.kafka.consumer.group-id}")
-    public void receiveResponse(ConsumerRecord<String, String> consumerRecord,
-                                @Payload(required = false) String payload) {
+    public void receiveResponse(ConsumerRecord<String, String> consumerRecord) {
 
-        if (payload == null || payload.trim().isEmpty()) {
+        if (StringUtils.hasText(consumerRecord.value())) {
             log.info("Получено пустое сообщение от сервера");
             return;
         }

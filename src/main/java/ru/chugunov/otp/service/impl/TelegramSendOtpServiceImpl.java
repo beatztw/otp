@@ -15,7 +15,7 @@ import ru.chugunov.otp.exception.OtpNotFoundException;
 import ru.chugunov.otp.kafka.KafkaMessageContext;
 import ru.chugunov.otp.model.SendOtp;
 import ru.chugunov.otp.repository.SendOtpRepository;
-import ru.chugunov.otp.service.KafkaOtpService;
+import ru.chugunov.otp.service.TelegramSendOtpService;
 import ru.chugunov.otp.utils.JsonUtils;
 
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +29,7 @@ import static ru.chugunov.otp.utils.Constants.RESPONSE_KAFKA_COMPLETABLE_FUTURE_
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "otp.kafka.send-otp", name = "enabled", havingValue = "true")
-public class KafkaOtpServiceImpl implements KafkaOtpService {
+public class TelegramSendOtpServiceImpl implements TelegramSendOtpService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
@@ -44,8 +44,8 @@ public class KafkaOtpServiceImpl implements KafkaOtpService {
 
     @Override
     public SendOtpKafkaResponse sendOtpToTelegram(String telegramChatId,
-                                                                     String message,
-                                                                     String sendMessageKey) {
+                                                  String message,
+                                                  String sendMessageKey) {
         SendOtpKafkaRequest kafkaRequest = SendOtpKafkaRequest.builder()
                 .id(sendMessageKey)
                 .message(message)
