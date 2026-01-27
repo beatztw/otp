@@ -1,15 +1,16 @@
 package ru.chugunov.otp.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.chugunov.otp.controllers.enums.SendOtpKafkaStatus;
 import ru.chugunov.otp.controllers.enums.SendOtpStatus;
+import ru.chugunov.otp.controllers.enums.SendingChannel;
 import ru.chugunov.otp.dto.requests.CheckOtpRequest;
 import ru.chugunov.otp.dto.requests.GeneratedOtpRequest;
-import ru.chugunov.otp.dto.responses.SendOtpKafkaResponse;
 import ru.chugunov.otp.exception.*;
 import ru.chugunov.otp.mapper.CheckOtpMapper;
 import ru.chugunov.otp.mapper.SendOtpMapper;
@@ -17,24 +18,43 @@ import ru.chugunov.otp.model.CheckOtp;
 import ru.chugunov.otp.model.SendOtp;
 import ru.chugunov.otp.repository.CheckOtpRepository;
 import ru.chugunov.otp.repository.SendOtpRepository;
-import ru.chugunov.otp.service.TelegramSendOtpService;
 import ru.chugunov.otp.service.OtpService;
+import ru.chugunov.otp.service.sender.OtpSender;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
 
-    private final TelegramSendOtpService telegramSendOtpService;
-
     private final CheckOtpRepository checkOtpRepository;
+
     private final SendOtpRepository sendOtpRepository;
+
     private final PasswordEncoder passwordEncoder;
+
     private final CheckOtpMapper checkOtpMapper;
+
     private final SendOtpMapper sendOtpMapper;
+
+    private final List<OtpSender> otpSenders;
+
+    private Map<SendingChannel, OtpSender> otpSenderMap;
+
+    @PostConstruct
+    public void init() {
+        this.otpSenderMap = otpSenders.stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        OtpSender::getSendingChannel,
+                        Function.identity())
+                );
+    }
 
     @Override
     @Transactional
@@ -50,7 +70,7 @@ public class OtpServiceImpl implements OtpService {
 
         String sendMessageKey = sendOtpForSave.getSendMessageKey();
 
-        sendOtp(request, generatedOtp, message, sendMessageKey);
+        sendOtp(request, message, sendMessageKey);
     }
 
     @Override
@@ -66,33 +86,32 @@ public class OtpServiceImpl implements OtpService {
         saveOtp(request, true);
     }
 
-    private void sendOtp(GeneratedOtpRequest request, String generatedOtp, String message, String sendMessageKey) {
-        switch (request.getSendingChannel()) {
-            case TELEGRAM -> {
-                SendOtpKafkaResponse response =
-                        telegramSendOtpService.sendOtpToTelegram(request.getTarget(), message, sendMessageKey);
-
-                checkKafkaResponse(sendMessageKey, response);
-            }
-
-            case CONSOLE -> System.out.println("Одноразовый пароль: " + generatedOtp);
-            default ->
-                    throw new BusinessException(String.format("Неизвестный канал отправки %s", request.getSendingChannel()));
-        }
-    }
-
-    private void checkKafkaResponse(String sendMessageKey, SendOtpKafkaResponse response) {
+    @Override
+    public void updateSendOtpStatus(String sendMessageKey, SendOtpStatus status) {
         SendOtp otpRecord = sendOtpRepository.findBySendMessageKey(sendMessageKey)
                 .orElseThrow(OtpNotFoundException::new);
 
-        if (SendOtpKafkaStatus.ERROR.equals(response.getStatus())) {
-            otpRecord.setStatus(SendOtpStatus.ERROR);
-            sendOtpRepository.save(otpRecord);
+        otpRecord.setStatus(status);
 
-            throw new KafkaSendOtpException(response.getErrorMessage());
-        } else if (SendOtpKafkaStatus.SUCCESS.equals(response.getStatus())) {
-            otpRecord.setStatus(SendOtpStatus.DELIVERED);
-            sendOtpRepository.save(otpRecord);
+        log.info("Статус записи otp с id = {} изменен на {}", otpRecord.getId(), status);
+
+        sendOtpRepository.save(otpRecord);
+    }
+
+    private void sendOtp(GeneratedOtpRequest request, String message, String sendMessageKey) {
+        try {
+            OtpSender otpSender = otpSenderMap.get(request.getSendingChannel());
+
+            if (otpSender == null) {
+                throw new BusinessException(String.format("Неизвестный канал отправки %s", request.getSendingChannel()));
+            }
+
+            otpSender.sendOtp(request.getTarget(), message, sendMessageKey);
+
+            updateSendOtpStatus(sendMessageKey, SendOtpStatus.DELIVERED);
+        } catch (KafkaSendOtpException e) {
+            updateSendOtpStatus(sendMessageKey, SendOtpStatus.ERROR);
+            throw e;
         }
     }
 

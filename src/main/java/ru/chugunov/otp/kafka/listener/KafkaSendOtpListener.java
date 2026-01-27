@@ -25,14 +25,15 @@ public class KafkaSendOtpListener {
     @KafkaListener(topics = "${otp.kafka.send-otp.topic-out}", groupId = "${spring.kafka.consumer.group-id}")
     public void receiveResponse(ConsumerRecord<String, String> consumerRecord) {
 
-        if (StringUtils.hasText(consumerRecord.value())) {
+        if (!StringUtils.hasText(consumerRecord.value())) {
             log.info("Получено пустое сообщение от сервера");
             return;
         }
 
         try {
             SendOtpKafkaResponse response = jsonUtils.fromJson(consumerRecord.value(), SendOtpKafkaResponse.class);
-            log.info("Получен ответ c id = {} и status = {}", response.getId(), response.getStatus());
+            log.info("Получен ответ от сервиса отправки для id = {} со статусом {}",
+                    response.getId(), response.getStatus());
 
             CompletableFuture<SendOtpKafkaResponse> responseCompletableFuture = kafkaMessageContext
                     .findById(response.getId());

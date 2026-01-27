@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.chugunov.otp.exception.JsonConversionException;
 
 @Slf4j
 @Component
@@ -19,7 +20,7 @@ public class JsonUtils {
         } catch (JsonProcessingException e) {
             log.error("Ошибка преобразования объекта в JSON", e);
 
-            throw new RuntimeException("Ошибка преобразования объекта в JSON", e);
+            throw new JsonConversionException();
         }
     }
 
@@ -29,7 +30,7 @@ public class JsonUtils {
         } catch (JsonProcessingException e) {
             log.error("Ошибка преобразования JSON в объект", e);
 
-            throw new RuntimeException("Ошибка преобразования JSON в объект", e);
+            throw new JsonConversionException();
         }
     }
 }

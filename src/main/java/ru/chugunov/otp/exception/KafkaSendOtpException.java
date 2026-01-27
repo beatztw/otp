@@ -1,10 +1,8 @@
 package ru.chugunov.otp.exception;
 
-import org.springframework.http.HttpStatus;
-
-public class KafkaSendOtpException extends ServiceException {
+public class KafkaSendOtpException extends RuntimeException {
 
     public KafkaSendOtpException(String message) {
-        super(message, HttpStatus.BAD_REQUEST);
+        super(message);
     }
 }

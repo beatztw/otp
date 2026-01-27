@@ -67,7 +67,7 @@ databaseChangeLog:
               - column:
                   name: create_time
                   type: timestamp
-                  defaultValue: current_timestamp
+                  defaultValue: now()
                   remarks: "Время создания"
               - column:
                   name: create_user
@@ -76,7 +76,7 @@ databaseChangeLog:
               - column:
                   name: last_update_time
                   type: timestamp
-                  defaultValue: current_timestamp
+                  defaultValue: now()
                   remarks: "Время обновления"
               - column:
                   name: last_update_user
