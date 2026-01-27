@@ -129,11 +129,11 @@ public class OtpServiceImpl implements OtpService {
                 throw new SessionTtlOtpExceededException();
             }
 
-            if (createTime.plusSeconds(request.getResendTimeout()).isBefore(now)) {
+            if (now.isBefore(createTime.plusSeconds(request.getResendTimeout()))) {
                 throw new ResendOtpFrequencyExceededException();
             }
 
-            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
+            if (sendOtpList.size() > sendOtpList.get(0).getResendAttempts()) {
                 throw new SendAttemptsExceededException();
             }
         }
