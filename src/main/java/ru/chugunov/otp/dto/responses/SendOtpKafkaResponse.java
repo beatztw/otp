@@ -1,5 +1,6 @@
 package ru.chugunov.otp.dto.responses;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.io.Serializable;
 public class SendOtpKafkaResponse implements Serializable {
 
     private String id;
-
+    @NotNull(message = "Статус ответа обязателен")
     private SendOtpKafkaStatus status;
 
     private String errorMessage;
