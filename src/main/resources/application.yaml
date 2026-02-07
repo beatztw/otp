@@ -33,7 +33,9 @@ otp:
       enabled: true
       topic-in: Send.Otp.IN.V1
       topic-out: Send.Otp.OUT.V1
-  caffeine:
-    expire-after-write-minutes: 1
-    maximum-size: 1000
+      response-timeout: 5
+  cache:
+    kafka-send-otp:
+      expire-after-write-minutes: 1
+      maximum-size: 1000
 

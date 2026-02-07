@@ -16,21 +16,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static ru.chugunov.otp.utils.Constants.RESPONSE_KAFKA_COMPLETABLE_FUTURE_TIMEOUT;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class SendOtpKafkaProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-
     private final KafkaMessageContext kafkaMessageContext;
-
     private final JsonUtils jsonUtils;
 
     @Value("${otp.kafka.send-otp.topic-in}")
     private String topicIn;
+
+    @Value("${otp.kafka.send-otp.response-timeout:3}")
+    private Long kafkaResponseTimeout;
 
     public SendOtpKafkaResponse sendOtp(SendOtpKafkaRequest request) {
         CompletableFuture<SendOtpKafkaResponse> responseCompletableFuture =
@@ -40,7 +39,7 @@ public class SendOtpKafkaProducer {
 
         try {
             return responseCompletableFuture
-                    .get(RESPONSE_KAFKA_COMPLETABLE_FUTURE_TIMEOUT, TimeUnit.SECONDS);
+                    .get(kafkaResponseTimeout, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             throw new KafkaSendOtpException("Таймаут ожидания ответа от сервиса отправки сообщений");
         } catch (InterruptedException | ExecutionException e) {

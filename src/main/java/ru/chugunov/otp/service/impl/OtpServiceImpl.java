@@ -1,6 +1,5 @@
 package ru.chugunov.otp.service.impl;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -25,8 +24,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,27 +31,12 @@ import java.util.stream.Collectors;
 public class OtpServiceImpl implements OtpService {
 
     private final CheckOtpRepository checkOtpRepository;
-
     private final SendOtpRepository sendOtpRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final CheckOtpMapper checkOtpMapper;
-
     private final SendOtpMapper sendOtpMapper;
+    private final Map<SendingChannel, OtpSender> otpSenderMap;
 
-    private final List<OtpSender> otpSenders;
-
-    private Map<SendingChannel, OtpSender> otpSenderMap;
-
-    @PostConstruct
-    public void init() {
-        this.otpSenderMap = otpSenders.stream()
-                .collect(Collectors.toUnmodifiableMap(
-                        OtpSender::getSendingChannel,
-                        Function.identity())
-                );
-    }
 
     @Override
     @Transactional

@@ -13,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 @Configuration
 public class CaffeineCacheConfig {
 
-    @Value("${otp.caffeine.expire-after-write-minutes}")
+    @Value("${otp.cache.kafka-send-otp.expire-after-write-minutes:1}")
     private Long expireAfterWriteMinutes;
 
-    @Value("${otp.caffeine.maximum-size}")
+    @Value("${otp.cache.kafka-send-otp.maximum-size:500}")
     private Long maximumCacheSize;
 
     @Bean
