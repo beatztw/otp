@@ -1,4 +1,4 @@
-package ru.chugunov.otp.controllers.enums;
+package ru.chugunov.otp.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

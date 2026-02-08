@@ -28,7 +28,7 @@ public class SendOtpKafkaProducer {
     @Value("${otp.kafka.send-otp.topic-in}")
     private String topicIn;
 
-    @Value("${otp.kafka.send-otp.response-timeout:3}")
+    @Value("${otp.kafka.send-otp.response-timeout-seconds:3}")
     private Long kafkaResponseTimeout;
 
     public SendOtpKafkaResponse sendOtp(SendOtpKafkaRequest request) {

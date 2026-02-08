@@ -3,7 +3,7 @@ package ru.chugunov.otp.service.sender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import ru.chugunov.otp.controllers.enums.SendingChannel;
+import ru.chugunov.otp.model.SendingChannel;
 
 @Slf4j
 @Component

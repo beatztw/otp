@@ -1,6 +1,6 @@
 package ru.chugunov.otp.service.sender;
 
-import ru.chugunov.otp.controllers.enums.SendingChannel;
+import ru.chugunov.otp.model.SendingChannel;
 
 public interface OtpSender {
 

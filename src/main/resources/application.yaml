@@ -33,7 +33,7 @@ otp:
       enabled: true
       topic-in: Send.Otp.IN.V1
       topic-out: Send.Otp.OUT.V1
-      response-timeout: 5
+      response-timeout-seconds: 5
   cache:
     kafka-send-otp:
       expire-after-write-minutes: 1

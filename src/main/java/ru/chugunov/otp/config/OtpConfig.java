@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.chugunov.otp.controllers.enums.SendingChannel;
+import ru.chugunov.otp.model.SendingChannel;
 import ru.chugunov.otp.service.sender.OtpSender;
 
 import java.util.List;

@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.chugunov.otp.controllers.enums.SendOtpStatus;
-import ru.chugunov.otp.controllers.enums.SendingChannel;
+import ru.chugunov.otp.model.SendOtpStatus;
+import ru.chugunov.otp.model.SendingChannel;
 import ru.chugunov.otp.dto.requests.CheckOtpRequest;
 import ru.chugunov.otp.dto.requests.GeneratedOtpRequest;
 import ru.chugunov.otp.exception.*;
@@ -39,7 +38,6 @@ public class OtpServiceImpl implements OtpService {
 
 
     @Override
-    @Transactional
     public void generateAndSendOtp(GeneratedOtpRequest request) {
         validateSendOtpRequest(request);
 

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
-import ru.chugunov.otp.controllers.enums.SendingChannel;
+import ru.chugunov.otp.model.SendingChannel;
 
 import java.util.UUID;
 

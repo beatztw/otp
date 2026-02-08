@@ -2,8 +2,6 @@ package ru.chugunov.otp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.chugunov.otp.controllers.enums.SendOtpStatus;
-import ru.chugunov.otp.controllers.enums.SendingChannel;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
