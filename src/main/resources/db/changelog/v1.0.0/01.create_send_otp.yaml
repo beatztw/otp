@@ -47,7 +47,7 @@ databaseChangeLog:
               - column:
                   name: resend_timeout
                   type: int
-                  remarks: "Еаймаут перед повторным запросом кода (в сек.)"
+                  remarks: "Таймаут перед повторным запросом кода (в сек.)"
               - column:
                   name: encoded_otp
                   type: varchar
@@ -59,7 +59,7 @@ databaseChangeLog:
               - column:
                   name: status
                   type: varchar
-                  remarks: "Статус отправки сообщения, возможные значения: IN_PROCESS, DELIVERED, ERROR"
+                  remarks: "Статус отправки сообщения"
               - column:
                   name: send_time
                   type: timestamp
@@ -67,6 +67,7 @@ databaseChangeLog:
               - column:
                   name: create_time
                   type: timestamp
+                  defaultValue: now()
                   remarks: "Время создания"
               - column:
                   name: create_user
@@ -75,6 +76,7 @@ databaseChangeLog:
               - column:
                   name: last_update_time
                   type: timestamp
+                  defaultValue: now()
                   remarks: "Время обновления"
               - column:
                   name: last_update_user

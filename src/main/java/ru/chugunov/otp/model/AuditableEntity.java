@@ -16,8 +16,11 @@ import static ru.chugunov.otp.utils.Constants.DEFAULT_DB_USER;
 public class AuditableEntity {
 
     private LocalDateTime createTime;
+
     private String createUser;
+
     private LocalDateTime lastUpdateTime;
+
     private String lastUpdateUser;
 
     @PrePersist

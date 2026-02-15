@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.chugunov.otp.dto.common.CommonResponse;
 import ru.chugunov.otp.dto.common.ValidationError;
-import ru.chugunov.otp.exception.OtpException;
+import ru.chugunov.otp.exception.BusinessException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,8 +91,8 @@ public class OtpExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(OtpException.class)
-    public CommonResponse<?> handleOtpException(OtpException e){
+    @ExceptionHandler(BusinessException.class)
+    public CommonResponse<?> handleOtpException(BusinessException e){
         log.warn("Перехвачена ошибка выполнения бизнес-логики: {}", e.getMessage(), e);
 
         return CommonResponse.builder()

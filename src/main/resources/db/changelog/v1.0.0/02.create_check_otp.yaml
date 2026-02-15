@@ -23,6 +23,7 @@ databaseChangeLog:
               - column:
                   name: check_time
                   type: timestamp
+                  defaultValue: now()
                   remarks: "Время проверки одноразового пароля"
               - column:
                   name: is_correct
@@ -31,6 +32,7 @@ databaseChangeLog:
               - column:
                   name: create_time
                   type: timestamp
+                  defaultValue: now()
                   remarks: "Время создания"
               - column:
                   name: create_user
@@ -39,6 +41,7 @@ databaseChangeLog:
               - column:
                   name: last_update_time
                   type: timestamp
+                  defaultValue: now()
                   remarks: "Время обновления"
               - column:
                   name: last_update_user

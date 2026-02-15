@@ -1,10 +1,12 @@
 package ru.chugunov.otp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.chugunov.otp.controllers.enums.SendOtpStatus;
+import ru.chugunov.otp.model.SendOtpStatus;
+import ru.chugunov.otp.model.SendingChannel;
 import ru.chugunov.otp.dto.requests.CheckOtpRequest;
 import ru.chugunov.otp.dto.requests.GeneratedOtpRequest;
 import ru.chugunov.otp.exception.*;
@@ -15,11 +17,14 @@ import ru.chugunov.otp.model.SendOtp;
 import ru.chugunov.otp.repository.CheckOtpRepository;
 import ru.chugunov.otp.repository.SendOtpRepository;
 import ru.chugunov.otp.service.OtpService;
+import ru.chugunov.otp.service.sender.OtpSender;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
@@ -29,6 +34,8 @@ public class OtpServiceImpl implements OtpService {
     private final PasswordEncoder passwordEncoder;
     private final CheckOtpMapper checkOtpMapper;
     private final SendOtpMapper sendOtpMapper;
+    private final Map<SendingChannel, OtpSender> otpSenderMap;
+
 
     @Override
     public void generateAndSendOtp(GeneratedOtpRequest request) {
@@ -36,19 +43,21 @@ public class OtpServiceImpl implements OtpService {
 
         String generatedOtp = RandomStringUtils.randomNumeric(request.getLength());
         String encodedOtp = passwordEncoder.encode(request.getProcessID() + generatedOtp);
-        String message = String.format(request.getMessage(), encodedOtp);
+        String message = String.format(request.getMessage(), generatedOtp);
 
         SendOtp sendOtpForSave = buildSendOtp(request, encodedOtp);
         sendOtpRepository.save(sendOtpForSave);
 
-        sendOtp(request, generatedOtp, message);
+        String sendMessageKey = sendOtpForSave.getSendMessageKey();
+
+        sendOtp(request, message, sendMessageKey);
     }
 
     @Override
     public void checkOtp(CheckOtpRequest request) {
         SendOtp latestOtp = sendOtpRepository.findFirstByProcessIdOrderByCreateTimeDesc(
                 String.valueOf(request.getProcessID())
-            ).orElseThrow(OtpNotFoundException::new);
+        ).orElseThrow(OtpNotFoundException::new);
 
         validateLatestOtp(latestOtp);
         checkIfAlreadyVerified(request);
@@ -57,14 +66,32 @@ public class OtpServiceImpl implements OtpService {
         saveOtp(request, true);
     }
 
-    private void sendOtp(GeneratedOtpRequest request, String generatedOtp, String message) {
-        switch (request.getSendingChannel()) {
-            // TODO: Реализовать логику отправки через кафка
-            case TELEGRAM -> System.out.println("Одноразовый пароль для телеграмма: " + generatedOtp);
+    @Override
+    public void updateSendOtpStatus(String sendMessageKey, SendOtpStatus status) {
+        SendOtp otpRecord = sendOtpRepository.findBySendMessageKey(sendMessageKey)
+                .orElseThrow(OtpNotFoundException::new);
 
-            case CONSOLE -> System.out.println("Одноразовый пароль: " + generatedOtp);
-            default ->
-                    throw new OtpException(String.format("Неизвестный канал отправки %s", request.getSendingChannel()));
+        otpRecord.setStatus(status);
+
+        log.info("Статус записи otp с id = {} изменен на {}", otpRecord.getId(), status);
+
+        sendOtpRepository.save(otpRecord);
+    }
+
+    private void sendOtp(GeneratedOtpRequest request, String message, String sendMessageKey) {
+        try {
+            OtpSender otpSender = otpSenderMap.get(request.getSendingChannel());
+
+            if (otpSender == null) {
+                throw new BusinessException(String.format("Неизвестный канал отправки %s", request.getSendingChannel()));
+            }
+
+            otpSender.sendOtp(request.getTarget(), message, sendMessageKey);
+
+            updateSendOtpStatus(sendMessageKey, SendOtpStatus.DELIVERED);
+        } catch (KafkaSendOtpException e) {
+            updateSendOtpStatus(sendMessageKey, SendOtpStatus.ERROR);
+            throw e;
         }
     }
 
@@ -82,11 +109,11 @@ public class OtpServiceImpl implements OtpService {
                 throw new SessionTtlOtpExceededException();
             }
 
-            if (createTime.plusSeconds(request.getResendTimeout()).isBefore(now)) {
+            if (now.isBefore(createTime.plusSeconds(request.getResendTimeout()))) {
                 throw new ResendOtpFrequencyExceededException();
             }
 
-            if (sendOtpList.size() >= sendOtpList.get(0).getResendAttempts()) {
+            if (sendOtpList.size() > sendOtpList.get(0).getResendAttempts()) {
                 throw new SendAttemptsExceededException();
             }
         }
@@ -94,6 +121,7 @@ public class OtpServiceImpl implements OtpService {
 
     private SendOtp buildSendOtp(GeneratedOtpRequest request, String encodedOtp) {
         SendOtp sendOtp = sendOtpMapper.fromGeneratedOtpRequestToEntity(request);
+
         sendOtp.setEncodedOtp(encodedOtp);
         sendOtp.setProcessId(String.valueOf(request.getProcessID()));
         sendOtp.setSendMessageKey(String.valueOf(UUID.randomUUID()));
@@ -108,6 +136,7 @@ public class OtpServiceImpl implements OtpService {
             throw new OtpExpiredException();
         }
     }
+
     private void checkIfAlreadyVerified(CheckOtpRequest request) {
         boolean alreadyVerified = checkOtpRepository.existsByProcessIdAndOtpAndCorrectTrue(
                 String.valueOf(request.getProcessID()),
@@ -141,6 +170,7 @@ public class OtpServiceImpl implements OtpService {
 
     private CheckOtp buildCheckOtp(CheckOtpRequest request, boolean isCorrect) {
         CheckOtp checkOtp = checkOtpMapper.fromCheckOtpRequestToEntity(request);
+
         checkOtp.setProcessId(String.valueOf(request.getProcessID()));
         checkOtp.setCheckTime(LocalDateTime.now());
         checkOtp.setCorrect(isCorrect);
